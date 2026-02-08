@@ -63,9 +63,9 @@ class EscalatedServiceProvider extends ServiceProvider
             return;
         }
 
-        $this->loadRoutesFrom(__DIR__.'/../routes/customer.php');
         $this->loadRoutesFrom(__DIR__.'/../routes/agent.php');
         $this->loadRoutesFrom(__DIR__.'/../routes/admin.php');
+        $this->loadRoutesFrom(__DIR__.'/../routes/customer.php');
     }
 
     protected function registerCommands(): void
