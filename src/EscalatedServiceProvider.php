@@ -102,31 +102,19 @@ class EscalatedServiceProvider extends ServiceProvider
 
     protected function registerEvents(): void
     {
-        Event::listen(Events\TicketCreated::class, [
-            Listeners\SendNewTicketNotifications::class,
-            Listeners\AutoAssignTicket::class,
-            Listeners\AttachSlaPolicy::class,
-        ]);
+        Event::listen(Events\TicketCreated::class, Listeners\SendNewTicketNotifications::class);
+        Event::listen(Events\TicketCreated::class, Listeners\AutoAssignTicket::class);
+        Event::listen(Events\TicketCreated::class, Listeners\AttachSlaPolicy::class);
 
-        Event::listen(Events\ReplyCreated::class, [
-            Listeners\SendReplyNotifications::class,
-            Listeners\RecordFirstResponse::class,
-        ]);
+        Event::listen(Events\ReplyCreated::class, Listeners\SendReplyNotifications::class);
+        Event::listen(Events\ReplyCreated::class, Listeners\RecordFirstResponse::class);
 
-        Event::listen(Events\TicketAssigned::class, [
-            Listeners\SendAssignmentNotification::class,
-        ]);
+        Event::listen(Events\TicketAssigned::class, Listeners\SendAssignmentNotification::class);
 
-        Event::listen(Events\TicketStatusChanged::class, [
-            Listeners\SendStatusChangeNotification::class,
-        ]);
+        Event::listen(Events\TicketStatusChanged::class, Listeners\SendStatusChangeNotification::class);
 
-        Event::listen(Events\SlaBreached::class, [
-            Listeners\SendSlaBreachNotification::class,
-        ]);
+        Event::listen(Events\SlaBreached::class, Listeners\SendSlaBreachNotification::class);
 
-        Event::listen(Events\TicketEscalated::class, [
-            Listeners\SendEscalationNotification::class,
-        ]);
+        Event::listen(Events\TicketEscalated::class, Listeners\SendEscalationNotification::class);
     }
 }
