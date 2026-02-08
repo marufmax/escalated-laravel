@@ -17,17 +17,19 @@ A full-featured, embeddable support ticket system for Laravel. Drop it into any 
 - **Email notifications** — Configurable per-event notifications with webhook support
 - **Department routing** — Organize agents into departments with auto-assignment (round-robin)
 - **Tagging system** — Categorize tickets with colored tags
-- **Inertia.js + Vue 3 UI** — Publishable frontend components with separate client/admin asset tags
+- **Inertia.js + Vue 3 UI** — Shared frontend via [`@escalated-dev/escalated`](https://github.com/escalated-dev/escalated)
 
 ## Requirements
 
 - PHP 8.2+
 - Laravel 11.x or 12.x
+- Node.js 18+ (for frontend assets)
 
 ## Quick Start
 
 ```bash
 composer require escalated/escalated-laravel
+npm install @escalated-dev/escalated
 php artisan escalated:install
 php artisan migrate
 ```

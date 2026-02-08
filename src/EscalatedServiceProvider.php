@@ -45,16 +45,9 @@ class EscalatedServiceProvider extends ServiceProvider
             __DIR__.'/../database/migrations' => database_path('migrations'),
         ], 'escalated-migrations');
 
-        $this->publishes([
-            __DIR__.'/../resources/js/Pages/Escalated/Customer' => resource_path('js/Pages/Escalated/Customer'),
-            __DIR__.'/../resources/js/Components/Escalated' => resource_path('js/Components/Escalated'),
-        ], 'escalated-client-assets');
-
-        $this->publishes([
-            __DIR__.'/../resources/js/Pages/Escalated/Agent' => resource_path('js/Pages/Escalated/Agent'),
-            __DIR__.'/../resources/js/Pages/Escalated/Admin' => resource_path('js/Pages/Escalated/Admin'),
-            __DIR__.'/../resources/js/Components/Escalated' => resource_path('js/Components/Escalated'),
-        ], 'escalated-admin-assets');
+        // Frontend assets are provided by the @escalated-dev/escalated npm package.
+        // Users install via: npm install @escalated-dev/escalated
+        // Then resolve pages in their Inertia setup from node_modules.
 
         $this->publishes([
             __DIR__.'/../resources/views' => resource_path('views/vendor/escalated'),
