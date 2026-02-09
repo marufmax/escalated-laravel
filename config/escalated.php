@@ -156,4 +156,41 @@ return [
         'retention_days' => 90,
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Inbound Email
+    |--------------------------------------------------------------------------
+    |
+    | Configure inbound email processing to create and reply to tickets via
+    | email. Supports Mailgun, Postmark, SES webhooks, and IMAP polling.
+    |
+    */
+    'inbound_email' => [
+        'enabled' => env('ESCALATED_INBOUND_EMAIL', false),
+        'adapter' => env('ESCALATED_INBOUND_ADAPTER', 'mailgun'),
+        'address' => env('ESCALATED_INBOUND_ADDRESS', 'support@example.com'),
+
+        'mailgun' => [
+            'signing_key' => env('ESCALATED_MAILGUN_SIGNING_KEY'),
+        ],
+
+        'postmark' => [
+            'token' => env('ESCALATED_POSTMARK_INBOUND_TOKEN'),
+        ],
+
+        'ses' => [
+            'region' => env('ESCALATED_SES_REGION', 'us-east-1'),
+            'topic_arn' => env('ESCALATED_SES_TOPIC_ARN'),
+        ],
+
+        'imap' => [
+            'host' => env('ESCALATED_IMAP_HOST'),
+            'port' => env('ESCALATED_IMAP_PORT', 993),
+            'encryption' => env('ESCALATED_IMAP_ENCRYPTION', 'ssl'),
+            'username' => env('ESCALATED_IMAP_USERNAME'),
+            'password' => env('ESCALATED_IMAP_PASSWORD'),
+            'mailbox' => env('ESCALATED_IMAP_MAILBOX', 'INBOX'),
+        ],
+    ],
+
 ];

@@ -15,6 +15,7 @@
         "illuminate/routing": "^11.0|^12.0"
     },
     "require-dev": {
+        "inertiajs/inertia-laravel": "^2.0",
         "orchestra/testbench": "^9.0|^10.0",
         "pestphp/pest": "^2.0|^3.0",
         "pestphp/pest-plugin-laravel": "^2.0|^3.0"
@@ -26,7 +27,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Escalated\\Laravel\\Tests\\": "tests/"
+            "Escalated\\Laravel\\Tests\\": "tests/",
+            "Escalated\\Laravel\\Database\\Factories\\": "database/factories/"
         }
     },
     "extra": {

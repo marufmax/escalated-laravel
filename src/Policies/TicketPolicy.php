@@ -14,7 +14,7 @@ class TicketPolicy
 
     public function view($user, Ticket $ticket): bool
     {
-        if (Gate::allows('escalated-agent', $user) || Gate::allows('escalated-admin', $user)) {
+        if (Gate::forUser($user)->allows('escalated-agent') || Gate::forUser($user)->allows('escalated-admin')) {
             return true;
         }
 
@@ -29,12 +29,12 @@ class TicketPolicy
 
     public function update($user, Ticket $ticket): bool
     {
-        return Gate::allows('escalated-agent', $user) || Gate::allows('escalated-admin', $user);
+        return Gate::forUser($user)->allows('escalated-agent') || Gate::forUser($user)->allows('escalated-admin');
     }
 
     public function reply($user, Ticket $ticket): bool
     {
-        if (Gate::allows('escalated-agent', $user) || Gate::allows('escalated-admin', $user)) {
+        if (Gate::forUser($user)->allows('escalated-agent') || Gate::forUser($user)->allows('escalated-admin')) {
             return true;
         }
 
@@ -44,17 +44,17 @@ class TicketPolicy
 
     public function addNote($user, Ticket $ticket): bool
     {
-        return Gate::allows('escalated-agent', $user) || Gate::allows('escalated-admin', $user);
+        return Gate::forUser($user)->allows('escalated-agent') || Gate::forUser($user)->allows('escalated-admin');
     }
 
     public function assign($user, Ticket $ticket): bool
     {
-        return Gate::allows('escalated-agent', $user) || Gate::allows('escalated-admin', $user);
+        return Gate::forUser($user)->allows('escalated-agent') || Gate::forUser($user)->allows('escalated-admin');
     }
 
     public function close($user, Ticket $ticket): bool
     {
-        if (Gate::allows('escalated-agent', $user) || Gate::allows('escalated-admin', $user)) {
+        if (Gate::forUser($user)->allows('escalated-agent') || Gate::forUser($user)->allows('escalated-admin')) {
             return true;
         }
 

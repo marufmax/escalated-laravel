@@ -18,8 +18,8 @@ class TicketFactory extends Factory
 
         return [
             'reference' => sprintf('ESC-%05d', $counter),
-            'requester_type' => 'App\\Models\\User',
-            'requester_id' => 1,
+            'requester_type' => null,
+            'requester_id' => null,
             'subject' => fake()->sentence(),
             'description' => fake()->paragraphs(2, true),
             'status' => TicketStatus::Open,

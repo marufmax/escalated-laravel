@@ -116,6 +116,6 @@ it('calculates due date with calendar hours', function () {
     $this->slaService->attachPolicy($ticket, $policy);
 
     $ticket->refresh();
-    expect($ticket->first_response_due_at->diffInHours($ticket->created_at))->toBe(4);
-    expect($ticket->resolution_due_at->diffInHours($ticket->created_at))->toBe(24);
+    expect((int) abs($ticket->first_response_due_at->diffInHours($ticket->created_at)))->toBe(4);
+    expect((int) abs($ticket->resolution_due_at->diffInHours($ticket->created_at)))->toBe(24);
 });

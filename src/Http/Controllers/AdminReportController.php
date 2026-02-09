@@ -20,10 +20,7 @@ class AdminReportController extends Controller
             'period_days' => $days,
             'total_tickets' => Ticket::where('created_at', '>=', $since)->count(),
             'resolved_tickets' => Ticket::whereNotNull('resolved_at')->where('resolved_at', '>=', $since)->count(),
-            'avg_first_response_hours' => round(Ticket::whereNotNull('first_response_at')
-                ->where('created_at', '>=', $since)
-                ->selectRaw('AVG(TIMESTAMPDIFF(HOUR, created_at, first_response_at)) as avg_hours')
-                ->value('avg_hours') ?? 0, 1),
+            'avg_first_response_hours' => round($this->avgFirstResponseHours($since), 1),
             'sla_breach_count' => Ticket::where('created_at', '>=', $since)->breachedSla()->count(),
             'by_status' => Ticket::where('created_at', '>=', $since)
                 ->select('status', DB::raw('count(*) as count'))
@@ -34,5 +31,21 @@ class AdminReportController extends Controller
                 ->groupBy('priority')
                 ->pluck('count', 'priority'),
         ]);
+    }
+
+    protected function avgFirstResponseHours($since): float
+    {
+        $driver = DB::connection()->getDriverName();
+
+        if ($driver === 'sqlite') {
+            $raw = 'AVG((julianday(first_response_at) - julianday(created_at)) * 24) as avg_hours';
+        } else {
+            $raw = 'AVG(TIMESTAMPDIFF(HOUR, created_at, first_response_at)) as avg_hours';
+        }
+
+        return (float) (Ticket::whereNotNull('first_response_at')
+            ->where('created_at', '>=', $since)
+            ->selectRaw($raw)
+            ->value('avg_hours') ?? 0);
     }
 }

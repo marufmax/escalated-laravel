@@ -10,9 +10,7 @@ class InstallCommand extends Command
     protected $signature = 'escalated:install
         {--force : Overwrite existing files}
         {--config : Only publish configuration}
-        {--migrations : Only publish migrations}
-        {--client-assets : Only publish client Vue pages}
-        {--admin-assets : Only publish admin Vue pages}';
+        {--migrations : Only publish migrations}';
 
     protected $description = 'Install the Escalated support ticket system';
 
@@ -24,9 +22,7 @@ class InstallCommand extends Command
         $force = $this->option('force');
         $onlyConfig = $this->option('config');
         $onlyMigrations = $this->option('migrations');
-        $onlyClient = $this->option('client-assets');
-        $onlyAdmin = $this->option('admin-assets');
-        $publishAll = ! $onlyConfig && ! $onlyMigrations && ! $onlyClient && ! $onlyAdmin;
+        $publishAll = ! $onlyConfig && ! $onlyMigrations;
 
         if ($publishAll || $onlyConfig) {
             $this->publishConfig($force);
@@ -34,14 +30,6 @@ class InstallCommand extends Command
 
         if ($publishAll || $onlyMigrations) {
             $this->publishMigrations($force);
-        }
-
-        if ($publishAll || $onlyClient) {
-            $this->publishClientAssets($force);
-        }
-
-        if ($publishAll || $onlyAdmin) {
-            $this->publishAdminAssets($force);
         }
 
         if ($publishAll) {
@@ -70,26 +58,6 @@ class InstallCommand extends Command
         $this->components->task('Publishing migrations', function () use ($force) {
             $this->callSilently('vendor:publish', [
                 '--tag' => 'escalated-migrations',
-                '--force' => $force,
-            ]);
-        });
-    }
-
-    protected function publishClientAssets(bool $force): void
-    {
-        $this->components->task('Publishing client assets', function () use ($force) {
-            $this->callSilently('vendor:publish', [
-                '--tag' => 'escalated-client-assets',
-                '--force' => $force,
-            ]);
-        });
-    }
-
-    protected function publishAdminAssets(bool $force): void
-    {
-        $this->components->task('Publishing admin assets', function () use ($force) {
-            $this->callSilently('vendor:publish', [
-                '--tag' => 'escalated-admin-assets',
                 '--force' => $force,
             ]);
         });

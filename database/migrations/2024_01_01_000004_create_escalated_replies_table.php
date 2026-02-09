@@ -13,7 +13,7 @@ return new class extends Migration
         Schema::create($prefix.'replies', function (Blueprint $table) use ($prefix) {
             $table->id();
             $table->foreignId('ticket_id')->constrained($prefix.'tickets')->cascadeOnDelete();
-            $table->morphs('author');
+            $table->nullableMorphs('author');
             $table->text('body');
             $table->boolean('is_internal_note')->default(false);
             $table->string('type')->default('reply');

@@ -6,10 +6,11 @@ use Escalated\Laravel\Contracts\HasTickets;
 use Escalated\Laravel\Contracts\Ticketable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
 class TestUser extends Authenticatable implements Ticketable
 {
-    use HasFactory, HasTickets;
+    use HasFactory, HasTickets, Notifiable;
 
     protected $table = 'users';
 

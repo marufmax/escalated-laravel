@@ -3,10 +3,13 @@
 use Escalated\Laravel\Enums\TicketStatus;
 use Escalated\Laravel\Models\Ticket;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Route;
 
 beforeEach(function () {
     Gate::define('escalated-agent', fn ($user) => $user->is_agent || $user->is_admin);
     Gate::define('escalated-admin', fn ($user) => $user->is_admin);
+
+    Route::get('/login', fn () => 'login')->name('login');
 });
 
 it('lists customer tickets', function () {

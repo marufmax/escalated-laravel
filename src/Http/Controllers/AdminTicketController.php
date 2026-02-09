@@ -98,7 +98,18 @@ class AdminTicketController extends Controller
 
     public function tags(Ticket $ticket, UpdateTagsRequest $request): RedirectResponse
     {
-        $ticket->tags()->sync($request->validated('tag_ids'));
+        $newTagIds = collect($request->validated('tag_ids'))->map(fn ($id) => (int) $id);
+        $currentTagIds = $ticket->tags()->pluck('id');
+
+        $toAdd = $newTagIds->diff($currentTagIds)->values()->all();
+        $toRemove = $currentTagIds->diff($newTagIds)->values()->all();
+
+        if ($toAdd) {
+            $this->ticketService->addTags($ticket, $toAdd, $request->user());
+        }
+        if ($toRemove) {
+            $this->ticketService->removeTags($ticket, $toRemove, $request->user());
+        }
 
         return back()->with('success', 'Tags updated.');
     }

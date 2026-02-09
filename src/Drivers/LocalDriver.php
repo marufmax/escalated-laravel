@@ -213,6 +213,11 @@ class LocalDriver implements TicketDriver
 
         foreach ($tagIds as $tagId) {
             $this->logActivity($ticket, ActivityType::TagAdded, $causer, ['tag_id' => $tagId]);
+
+            $tag = \Escalated\Laravel\Models\Tag::find($tagId);
+            if ($tag) {
+                Events\TagAddedToTicket::dispatch($ticket, $tag);
+            }
         }
 
         return $ticket->fresh();
@@ -224,6 +229,11 @@ class LocalDriver implements TicketDriver
 
         foreach ($tagIds as $tagId) {
             $this->logActivity($ticket, ActivityType::TagRemoved, $causer, ['tag_id' => $tagId]);
+
+            $tag = \Escalated\Laravel\Models\Tag::find($tagId);
+            if ($tag) {
+                Events\TagRemovedFromTicket::dispatch($ticket, $tag);
+            }
         }
 
         return $ticket->fresh();

@@ -5,6 +5,7 @@ namespace Escalated\Laravel\Tests;
 use Escalated\Laravel\EscalatedServiceProvider;
 use Escalated\Laravel\Tests\Fixtures\TestUser;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\ServiceProvider as InertiaServiceProvider;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
@@ -14,6 +15,7 @@ abstract class TestCase extends BaseTestCase
     protected function getPackageProviders($app): array
     {
         return [
+            InertiaServiceProvider::class,
             EscalatedServiceProvider::class,
         ];
     }
@@ -27,9 +29,12 @@ abstract class TestCase extends BaseTestCase
             'prefix' => '',
         ]);
 
+        $app['config']->set('app.key', 'base64:'.base64_encode(str_repeat('a', 32)));
+        $app['config']->set('view.paths', [__DIR__.'/../resources/views']);
         $app['config']->set('escalated.mode', 'self-hosted');
         $app['config']->set('escalated.user_model', TestUser::class);
         $app['config']->set('escalated.routes.enabled', true);
+        $app['config']->set('escalated.inbound_email.enabled', true);
     }
 
     protected function defineDatabaseMigrations(): void

@@ -6,6 +6,7 @@ use Escalated\Laravel\Console\Commands\CheckSlaCommand;
 use Escalated\Laravel\Console\Commands\CloseResolvedCommand;
 use Escalated\Laravel\Console\Commands\EvaluateEscalationsCommand;
 use Escalated\Laravel\Console\Commands\InstallCommand;
+use Escalated\Laravel\Console\Commands\PollImapCommand;
 use Escalated\Laravel\Console\Commands\PurgeActivitiesCommand;
 use Escalated\Laravel\Events;
 use Escalated\Laravel\Listeners;
@@ -69,6 +70,11 @@ class EscalatedServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(__DIR__.'/../routes/admin.php');
         $this->loadRoutesFrom(__DIR__.'/../routes/customer.php');
         $this->loadRoutesFrom(__DIR__.'/../routes/guest.php');
+
+        // Inbound email webhook routes (no auth required)
+        if (config('escalated.inbound_email.enabled', false)) {
+            $this->loadRoutesFrom(__DIR__.'/../routes/inbound.php');
+        }
     }
 
     protected function registerCommands(): void
@@ -83,6 +89,7 @@ class EscalatedServiceProvider extends ServiceProvider
             EvaluateEscalationsCommand::class,
             CloseResolvedCommand::class,
             PurgeActivitiesCommand::class,
+            PollImapCommand::class,
         ]);
     }
 
@@ -130,5 +137,30 @@ class EscalatedServiceProvider extends ServiceProvider
         Event::listen(Events\SlaBreached::class, Listeners\SendSlaBreachNotification::class);
 
         Event::listen(Events\TicketEscalated::class, Listeners\SendEscalationNotification::class);
+
+        // Webhook dispatch for all events
+        $webhookEvents = [
+            Events\TicketCreated::class,
+            Events\TicketUpdated::class,
+            Events\TicketStatusChanged::class,
+            Events\TicketResolved::class,
+            Events\TicketClosed::class,
+            Events\TicketReopened::class,
+            Events\TicketAssigned::class,
+            Events\TicketUnassigned::class,
+            Events\TicketEscalated::class,
+            Events\TicketPriorityChanged::class,
+            Events\DepartmentChanged::class,
+            Events\ReplyCreated::class,
+            Events\InternalNoteAdded::class,
+            Events\SlaBreached::class,
+            Events\SlaWarning::class,
+            Events\TagAddedToTicket::class,
+            Events\TagRemovedFromTicket::class,
+        ];
+
+        foreach ($webhookEvents as $event) {
+            Event::listen($event, Listeners\DispatchWebhook::class);
+        }
     }
 }
