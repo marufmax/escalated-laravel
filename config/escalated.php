@@ -165,6 +165,22 @@ return [
     | email. Supports Mailgun, Postmark, SES webhooks, and IMAP polling.
     |
     */
+    /*
+    |--------------------------------------------------------------------------
+    | REST API
+    |--------------------------------------------------------------------------
+    |
+    | Enable the REST API for external integrations (desktop app, mobile, etc.).
+    | Tokens are managed via the admin panel.
+    |
+    */
+    'api' => [
+        'enabled' => env('ESCALATED_API_ENABLED', false),
+        'rate_limit' => env('ESCALATED_API_RATE_LIMIT', 60),
+        'token_expiry_days' => null,
+        'prefix' => 'support/api/v1',
+    ],
+
     'inbound_email' => [
         'enabled' => env('ESCALATED_INBOUND_EMAIL', false),
         'adapter' => env('ESCALATED_INBOUND_ADAPTER', 'mailgun'),

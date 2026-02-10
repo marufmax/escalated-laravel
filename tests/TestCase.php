@@ -35,6 +35,7 @@ abstract class TestCase extends BaseTestCase
         $app['config']->set('escalated.user_model', TestUser::class);
         $app['config']->set('escalated.routes.enabled', true);
         $app['config']->set('escalated.inbound_email.enabled', true);
+        $app['config']->set('escalated.api.enabled', true);
     }
 
     protected function defineDatabaseMigrations(): void

@@ -71,10 +71,33 @@ class EscalatedServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(__DIR__.'/../routes/customer.php');
         $this->loadRoutesFrom(__DIR__.'/../routes/guest.php');
 
+        // REST API routes (token auth, no session)
+        if (config('escalated.api.enabled', false)) {
+            $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
+            $this->registerApiTokenRoutes();
+        }
+
         // Inbound email webhook routes (no auth required)
         if (config('escalated.inbound_email.enabled', false)) {
             $this->loadRoutesFrom(__DIR__.'/../routes/inbound.php');
         }
+    }
+
+    protected function registerApiTokenRoutes(): void
+    {
+        $middleware = array_merge(
+            config('escalated.routes.admin_middleware', ['web', 'auth']),
+            [\Escalated\Laravel\Http\Middleware\EnsureIsAdmin::class]
+        );
+
+        \Illuminate\Support\Facades\Route::middleware($middleware)
+            ->prefix(config('escalated.routes.prefix', 'support').'/admin')
+            ->group(function () {
+                \Illuminate\Support\Facades\Route::get('/api-tokens', [\Escalated\Laravel\Http\Controllers\AdminApiTokenController::class, 'index'])->name('escalated.admin.api-tokens.index');
+                \Illuminate\Support\Facades\Route::post('/api-tokens', [\Escalated\Laravel\Http\Controllers\AdminApiTokenController::class, 'store'])->name('escalated.admin.api-tokens.store');
+                \Illuminate\Support\Facades\Route::patch('/api-tokens/{id}', [\Escalated\Laravel\Http\Controllers\AdminApiTokenController::class, 'update'])->name('escalated.admin.api-tokens.update');
+                \Illuminate\Support\Facades\Route::delete('/api-tokens/{id}', [\Escalated\Laravel\Http\Controllers\AdminApiTokenController::class, 'destroy'])->name('escalated.admin.api-tokens.destroy');
+            });
     }
 
     protected function registerCommands(): void
