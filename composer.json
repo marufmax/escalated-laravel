@@ -2,6 +2,7 @@
     "name": "escalated-dev/escalated-laravel",
     "description": "An embeddable support ticket system for Laravel applications",
     "keywords": ["laravel", "support", "tickets", "helpdesk", "customer-support"],
+    "version": "0.4.0",
     "license": "MIT",
     "type": "library",
     "require": {
