@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout package
+      - name: Checkout escalated-laravel
         uses: actions/checkout@v4
         with:
           path: escalated-laravel
@@ -22,7 +22,7 @@ jobs:
           php-version: '8.2'
           coverage: none
 
-      - name: Create Laravel host
+      - name: Create Laravel host application
         run: composer create-project laravel/laravel laravel --no-interaction
 
       - name: Install escalated-laravel into host
@@ -31,19 +31,17 @@ jobs:
           composer config repositories.escalated path ../escalated-laravel
           composer require escalated-dev/escalated-laravel:@dev --no-interaction
 
-      - name: Prepare environment
+      - name: Prepare Laravel environment
         working-directory: laravel
         run: |
           cp .env.example .env
           php artisan key:generate
+          mkdir -p database
           touch database/database.sqlite
 
-      - name: Run escalated package tests
+      - name: Run escalated package tests (Pest)
         working-directory: laravel
         env:
           DB_CONNECTION: sqlite
           DB_DATABASE: database/database.sqlite
-        run: |
-          vendor/bin/phpunit \
-            ../escalated-laravel/tests
-
+        run: vendor/bin/pest ../escalated-laravel/tests
