@@ -31,6 +31,10 @@ jobs:
           composer config repositories.escalated path ../escalated-laravel
           composer require escalated-dev/escalated-laravel:@dev --no-interaction
 
+      - name: Install Pest in host
+        working-directory: laravel
+        run: composer require pestphp/pest pestphp/pest-plugin-laravel --dev --no-interaction
+
       - name: Prepare Laravel environment
         working-directory: laravel
         run: |
