@@ -102,6 +102,15 @@ class AdminPluginController extends Controller
     public function destroy(string $slug)
     {
         try {
+            // Check if plugin is composer-sourced before attempting delete
+            $allPlugins = $this->pluginService->getAllPlugins();
+            $plugin = collect($allPlugins)->firstWhere('slug', $slug);
+
+            if ($plugin && $plugin['source'] === 'composer') {
+                return redirect()->back()
+                    ->with('error', 'Composer plugins cannot be deleted. Remove the package via Composer instead.');
+            }
+
             $this->pluginService->deletePlugin($slug);
 
             return redirect()->back()

@@ -15,7 +15,7 @@ class PluginService
 
     public function __construct()
     {
-        $this->pluginsPath = config('escalated.plugins.path', base_path('plugins/escalated'));
+        $this->pluginsPath = config('escalated.plugins.path', resource_path('escalated/plugins'));
 
         // Ensure plugins directory exists
         if (! File::exists($this->pluginsPath)) {
@@ -27,6 +27,14 @@ class PluginService
      * Get all installed plugins with their metadata.
      */
     public function getAllPlugins(): array
+    {
+        return array_merge($this->getLocalPlugins(), $this->getComposerPlugins());
+    }
+
+    /**
+     * Get plugins installed in the local plugins directory.
+     */
+    protected function getLocalPlugins(): array
     {
         $plugins = [];
         $directories = File::directories($this->pluginsPath);
@@ -53,8 +61,55 @@ class PluginService
                     'is_active' => $dbPlugin ? $dbPlugin->is_active : false,
                     'activated_at' => $dbPlugin?->activated_at,
                     'path' => $directory,
+                    'source' => 'local',
                 ];
             }
+        }
+
+        return $plugins;
+    }
+
+    /**
+     * Discover plugins installed via Composer (vendor packages with plugin.json).
+     */
+    protected function getComposerPlugins(): array
+    {
+        $plugins = [];
+        $pattern = base_path('vendor/*/*/plugin.json');
+        $manifests = glob($pattern);
+
+        if (! $manifests) {
+            return [];
+        }
+
+        foreach ($manifests as $manifestPath) {
+            $directory = dirname($manifestPath);
+            $manifest = json_decode(File::get($manifestPath), true);
+
+            if (! $manifest) {
+                continue;
+            }
+
+            // Derive slug from vendor/package path (e.g. "acme/escalated-billing" → "acme--escalated-billing")
+            $parts = array_slice(explode('/', str_replace('\\', '/', $directory)), -2);
+            $pluginSlug = implode('--', $parts);
+
+            $dbPlugin = Plugin::where('slug', $pluginSlug)->first();
+
+            $plugins[] = [
+                'slug' => $pluginSlug,
+                'name' => $manifest['name'] ?? $pluginSlug,
+                'description' => $manifest['description'] ?? '',
+                'version' => $manifest['version'] ?? '1.0.0',
+                'author' => $manifest['author'] ?? 'Unknown',
+                'author_url' => $manifest['author_url'] ?? '',
+                'requires' => $manifest['requires'] ?? '1.0.0',
+                'main_file' => $manifest['main_file'] ?? 'Plugin.php',
+                'is_active' => $dbPlugin ? $dbPlugin->is_active : false,
+                'activated_at' => $dbPlugin?->activated_at,
+                'path' => $directory,
+                'source' => 'composer',
+            ];
         }
 
         return $plugins;
@@ -131,10 +186,18 @@ class PluginService
     }
 
     /**
-     * Delete a plugin.
+     * Delete a plugin. Only local plugins can be deleted.
      */
     public function deletePlugin(string $slug): bool
     {
+        // Check if this is a composer plugin — cannot delete those
+        $allPlugins = $this->getAllPlugins();
+        $pluginData = collect($allPlugins)->firstWhere('slug', $slug);
+
+        if ($pluginData && $pluginData['source'] === 'composer') {
+            throw new \Exception('Composer plugins cannot be deleted. Remove the package via Composer instead.');
+        }
+
         $pluginPath = $this->pluginsPath.'/'.$slug;
 
         if (! File::exists($pluginPath)) {
@@ -238,11 +301,16 @@ class PluginService
     }
 
     /**
-     * Load a specific plugin.
+     * Load a specific plugin by slug. Resolves path from both local and composer sources.
      */
     public function loadPlugin(string $slug): void
     {
-        $pluginPath = $this->pluginsPath.'/'.$slug;
+        $pluginPath = $this->resolvePluginPath($slug);
+
+        if (! $pluginPath) {
+            return;
+        }
+
         $manifestPath = $pluginPath.'/plugin.json';
 
         if (! File::exists($manifestPath)) {
@@ -260,5 +328,27 @@ class PluginService
             // Run the plugin's loaded action if it exists
             Hook::doAction('escalated_plugin_loaded', $slug, $manifest);
         }
+    }
+
+    /**
+     * Resolve the filesystem path for a plugin slug (local or composer).
+     */
+    protected function resolvePluginPath(string $slug): ?string
+    {
+        // Check local plugins first
+        $localPath = $this->pluginsPath.'/'.$slug;
+        if (File::exists($localPath.'/plugin.json')) {
+            return $localPath;
+        }
+
+        // Check composer plugins — slug uses "vendor--package" format
+        if (str_contains($slug, '--')) {
+            $vendorPath = base_path('vendor/'.str_replace('--', '/', $slug));
+            if (File::exists($vendorPath.'/plugin.json')) {
+                return $vendorPath;
+            }
+        }
+
+        return null;
     }
 }

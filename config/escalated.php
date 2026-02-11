@@ -167,7 +167,7 @@ return [
     */
     'plugins' => [
         'enabled' => env('ESCALATED_PLUGINS_ENABLED', true),
-        'path' => base_path('plugins/escalated'),
+        'path' => resource_path('escalated/plugins'),
     ],
 
     /*
