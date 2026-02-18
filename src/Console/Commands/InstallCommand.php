@@ -222,10 +222,6 @@ class InstallCommand extends Command
 
     protected function addHasTicketsTrait(string $contents): string
     {
-        if (preg_match('/^\s*use\s+[^;]*\bHasTickets\b[^;]*;/m', $contents)) {
-            return $contents;
-        }
-
         $classPos = $this->findClassDeclarationPosition($contents);
 
         if ($classPos === false) {
@@ -239,6 +235,11 @@ class InstallCommand extends Command
         }
 
         $classBody = substr($contents, $bracePos);
+
+        // Check within class body only to avoid matching import statements
+        if (preg_match('/^\s*use\s+[^;]*\bHasTickets\b[^;]*;/m', $classBody)) {
+            return $contents;
+        }
 
         if (preg_match('/^(\s*use\s+)([^;]+)(;)/m', $classBody, $match, PREG_OFFSET_CAPTURE)) {
             $traitListEnd = $bracePos + $match[2][1] + strlen($match[2][0]);
