@@ -15,6 +15,7 @@ use Escalated\Laravel\Http\Controllers\Admin\SkillController;
 use Escalated\Laravel\Http\Controllers\Admin\SlaPolicyController;
 use Escalated\Laravel\Http\Controllers\Admin\StatusController;
 use Escalated\Laravel\Http\Controllers\Admin\TagController;
+use Escalated\Laravel\Http\Controllers\Admin\WebhookController;
 use Escalated\Laravel\Http\Controllers\Admin\SideConversationController;
 use Escalated\Laravel\Http\Controllers\PresenceController;
 use Escalated\Laravel\Http\Controllers\Admin\TicketController;
@@ -127,4 +128,13 @@ Route::middleware(array_merge(config('escalated.routes.admin_middleware', ['web'
         // Agent Capacity
         Route::get('/capacity', [CapacityController::class, 'index'])->name('escalated.admin.capacity.index');
         Route::put('/capacity/{capacity}', [CapacityController::class, 'update'])->name('escalated.admin.capacity.update');
+
+        // Webhooks
+        Route::resource('webhooks', WebhookController::class)
+            ->names('escalated.admin.webhooks')
+            ->except(['show']);
+        Route::get('/webhooks/{webhook}/deliveries', [WebhookController::class, 'deliveries'])
+            ->name('escalated.admin.webhooks.deliveries');
+        Route::post('/webhooks/deliveries/{delivery}/retry', [WebhookController::class, 'retry'])
+            ->name('escalated.admin.webhooks.retry');
     });
