@@ -24,7 +24,7 @@ class PluginController extends Controller
     {
         $plugins = $this->pluginService->getAllPlugins();
 
-        return Inertia::render('Escalated/Admin/Plugins', [
+        return Inertia::render('Escalated/Admin/Plugins/Index', [
             'plugins' => $plugins,
         ]);
     }
