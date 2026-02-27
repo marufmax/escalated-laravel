@@ -10,7 +10,7 @@ return new class extends Migration
     {
         $prefix = config('escalated.table_prefix', 'escalated_');
 
-        Schema::create($prefix.'article_categories', function (Blueprint $table) {
+        Schema::create($prefix.'article_categories', function (Blueprint $table) use ($prefix) {
             $table->id();
             $table->string('name');
             $table->string('slug')->unique();
