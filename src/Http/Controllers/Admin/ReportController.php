@@ -4,6 +4,7 @@ namespace Escalated\Laravel\Http\Controllers\Admin;
 
 use Escalated\Laravel\Models\SatisfactionRating;
 use Escalated\Laravel\Models\Ticket;
+use Escalated\Laravel\Services\ReportingService;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
@@ -12,6 +13,8 @@ use Inertia\Response;
 
 class ReportController extends Controller
 {
+    public function __construct(protected ReportingService $reporting) {}
+
     public function __invoke(Request $request): Response
     {
         $days = $request->integer('days', 30);
@@ -32,6 +35,82 @@ class ReportController extends Controller
                 ->groupBy('priority')
                 ->pluck('count', 'priority'),
             'csat' => $this->getCsatMetrics($since),
+        ]);
+    }
+
+    /**
+     * Dashboard with tabs: Overview, Agents, SLA, CSAT.
+     */
+    public function dashboard(Request $request): Response
+    {
+        $days = $request->integer('days', 30);
+        $start = now()->subDays($days);
+        $end = now();
+
+        return Inertia::render('Escalated/Admin/Reports/Dashboard', [
+            'period_days' => $days,
+            'volume' => $this->reporting->getTicketVolumeByDate($start, $end),
+            'by_status' => $this->reporting->getTicketsByStatus(),
+            'by_priority' => $this->reporting->getTicketsByPriority(),
+            'avg_response_hours' => $this->reporting->getAverageResponseTime($start, $end),
+            'avg_resolution_hours' => $this->reporting->getAverageResolutionTime($start, $end),
+            'sla_compliance' => $this->reporting->getSlaComplianceRate($start, $end),
+            'csat_average' => $this->reporting->getCsatAverage($start, $end),
+            'agent_performance' => $this->reporting->getAgentPerformance($start, $end),
+        ]);
+    }
+
+    /**
+     * Agent performance sub-report.
+     */
+    public function agents(Request $request): Response
+    {
+        $days = $request->integer('days', 30);
+        $start = now()->subDays($days);
+        $end = now();
+
+        return Inertia::render('Escalated/Admin/Reports/AgentMetrics', [
+            'period_days' => $days,
+            'agents' => $this->reporting->getAgentPerformance($start, $end),
+        ]);
+    }
+
+    /**
+     * SLA compliance sub-report.
+     */
+    public function sla(Request $request): Response
+    {
+        $days = $request->integer('days', 30);
+        $start = now()->subDays($days);
+        $end = now();
+
+        return Inertia::render('Escalated/Admin/Reports/SlaReport', [
+            'period_days' => $days,
+            'compliance_rate' => $this->reporting->getSlaComplianceRate($start, $end),
+            'compliance_by_policy' => $this->reporting->getSlaComplianceByPolicy($start, $end),
+            'breaches' => $this->reporting->getSlaBreachDetails($start, $end),
+        ]);
+    }
+
+    /**
+     * CSAT analytics sub-report.
+     */
+    public function csat(Request $request): Response
+    {
+        $days = $request->integer('days', 30);
+        $start = now()->subDays($days);
+        $end = now();
+
+        $totalTickets = Ticket::whereBetween('created_at', [$start, $end])->count();
+        $totalRatings = SatisfactionRating::whereBetween('created_at', [$start, $end])->count();
+
+        return Inertia::render('Escalated/Admin/Reports/CsatReport', [
+            'period_days' => $days,
+            'csat_average' => $this->reporting->getCsatAverage($start, $end),
+            'response_rate' => $totalTickets > 0 ? round(($totalRatings / $totalTickets) * 100, 1) : 0,
+            'total_ratings' => $totalRatings,
+            'by_agent' => $this->reporting->getCsatByAgent($start, $end),
+            'over_time' => $this->reporting->getCsatOverTime($start, $end),
         ]);
     }
 

@@ -1,5 +1,6 @@
 <?php
 
+use Escalated\Laravel\Http\Controllers\Customer\KnowledgeBaseController;
 use Escalated\Laravel\Http\Controllers\Customer\TicketController;
 use Escalated\Laravel\Http\Controllers\SatisfactionRatingController;
 use Escalated\Laravel\Http\Middleware\ResolveTicketByReference;
@@ -11,6 +12,11 @@ Route::middleware(config('escalated.routes.middleware', ['web', 'auth']))
         Route::get('/', [TicketController::class, 'index'])->name('escalated.customer.tickets.index');
         Route::get('/create', [TicketController::class, 'create'])->name('escalated.customer.tickets.create');
         Route::post('/', [TicketController::class, 'store'])->name('escalated.customer.tickets.store');
+
+        // Knowledge Base
+        Route::get('/kb', [KnowledgeBaseController::class, 'index'])->name('escalated.customer.kb.index');
+        Route::get('/kb/{slug}', [KnowledgeBaseController::class, 'show'])->name('escalated.customer.kb.show');
+        Route::post('/kb/{slug}/feedback', [KnowledgeBaseController::class, 'feedback'])->name('escalated.customer.kb.feedback');
 
         Route::middleware(ResolveTicketByReference::class)
             ->where(['ticket' => '[A-Z]+-[0-9]+|[0-9]+'])

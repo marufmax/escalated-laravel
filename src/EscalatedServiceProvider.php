@@ -6,10 +6,14 @@ use Escalated\Laravel\Console\Commands\CheckSlaCommand;
 use Escalated\Laravel\Console\Commands\CloseResolvedCommand;
 use Escalated\Laravel\Console\Commands\EvaluateEscalationsCommand;
 use Escalated\Laravel\Console\Commands\InstallCommand;
+use Escalated\Laravel\Console\Commands\PluginCommand;
 use Escalated\Laravel\Console\Commands\PollImapCommand;
 use Escalated\Laravel\Console\Commands\PurgeActivitiesCommand;
+use Escalated\Laravel\Console\Commands\PurgeExpiredDataCommand;
+use Escalated\Laravel\Console\Commands\RunAutomationsCommand;
 use Escalated\Laravel\Events;
 use Escalated\Laravel\Listeners;
+use Escalated\Laravel\Models\AgentProfile;
 use Escalated\Laravel\Models\EscalatedSettings;
 use Escalated\Laravel\Services\PluginService;
 use Escalated\Laravel\Services\PluginUIService;
@@ -133,11 +137,14 @@ class EscalatedServiceProvider extends ServiceProvider
 
         $this->commands([
             InstallCommand::class,
+            PluginCommand::class,
             CheckSlaCommand::class,
             EvaluateEscalationsCommand::class,
             CloseResolvedCommand::class,
             PurgeActivitiesCommand::class,
             PollImapCommand::class,
+            RunAutomationsCommand::class,
+            PurgeExpiredDataCommand::class,
         ]);
     }
 
@@ -180,6 +187,18 @@ class EscalatedServiceProvider extends ServiceProvider
                 }
             } catch (\Throwable) {
                 // Settings table may not exist yet
+            }
+
+            // Share agent type (full/light) for light agent restrictions
+            if ($user) {
+                try {
+                    if (Schema::hasTable(Escalated::table('agent_profiles'))) {
+                        $profile = AgentProfile::where('user_id', $user->getKey())->first();
+                        $data['agent_type'] = $profile?->agent_type ?? 'full';
+                    }
+                } catch (\Throwable) {
+                    // Agent profiles table may not exist yet
+                }
             }
 
             // Share plugin UI extensions if plugins are enabled
