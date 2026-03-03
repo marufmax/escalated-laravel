@@ -214,7 +214,7 @@ class Ticket extends Model
             return $this->guest_name ?? 'Guest';
         }
 
-        return $this->requester?->name ?? 'Unknown';
+        return $this->requester?->ticketable_name ?? 'Unknown';
     }
 
     public function getRequesterEmailAttribute(): string
